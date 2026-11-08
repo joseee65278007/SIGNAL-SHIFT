@@ -96,10 +96,10 @@ function makeCar(color,addLights=true){
 function addBuilding(side,z){
   const g=new THREE.Group(),w=rand(7,13),h=rand(13,36),d=rand(9,18);
   g.position.set(side*(15+rand(0,20)),0,z);
-  const wall=material([0x1b293a,0x202c3e,0x303342,0x182331][Math.floor(rand(0,4))],.35,.76);
+  const wall=material([0x8b9a9d,0x9caaad,0xb0a99a,0x7f9298][Math.floor(rand(0,4))],.35,.76);
   block(g,w,h,d,wall,0,h/2-.2,0);
   block(g,w*1.05,.32,d*1.04,material(0x0a1421,.5,.42),0,h-.18,0);
-  const windows=[material(0xffc977,.1,.28,{emissive:0xe99a42,emissiveIntensity:.8}),material(0x53dfe0,.3,.22,{emissive:0x1aaeb8,emissiveIntensity:1.5})];
+  const windows=[material(0x6b8b9a,.1,.28),material(0x9bbac5,.3,.22)];
   const rows=Math.floor(h/2.5),cols=Math.max(2,Math.floor(w/2.2));
   for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
     if(Math.random()<.24)continue;
@@ -119,31 +119,36 @@ function addLamp(side,z){
 }
 function addDash(z,x){const d=block(road,.13,.025,4.8,material(0xe7e7df,.02,.62),x,-.015,z);dashes.push(d);}
 function buildScene(){
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x090f19);scene.fog=new THREE.FogExp2(0x0b1420,.0044);
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x87b9e8);scene.fog=new THREE.Fog(0x9bbbd0,105,360);
   camera=new THREE.PerspectiveCamera(62,1,.1,440);
   renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.35));renderer.setSize(game.clientWidth,game.clientHeight,false);
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.32;
-  scene.add(new THREE.HemisphereLight(0xc9e2ff,0x20202a,2.35));
-  const moon=new THREE.DirectionalLight(0xd8e8ff,3.0);moon.position.set(-15,30,-25);moon.castShadow=true;moon.shadow.mapSize.set(1024,1024);moon.shadow.camera.left=-30;moon.shadow.camera.right=30;moon.shadow.camera.top=45;moon.shadow.camera.bottom=-25;moon.shadow.camera.near=1;moon.shadow.camera.far=100;moon.shadow.bias=-.00035;scene.add(moon);
-  const amber=new THREE.PointLight(0xffad69,34,90,2);amber.position.set(20,13,-45);scene.add(amber);
-  const blue=new THREE.PointLight(0x3f8fff,28,95,2);blue.position.set(-22,12,-100);scene.add(blue);
+  scene.add(new THREE.HemisphereLight(0xe8f5ff,0x61734b,2.15));
+  const sun=new THREE.DirectionalLight(0xfff0d6,3.15);sun.position.set(-28,42,-18);sun.castShadow=true;sun.shadow.mapSize.set(1536,1536);sun.shadow.camera.left=-34;sun.shadow.camera.right=34;sun.shadow.camera.top=48;sun.shadow.camera.bottom=-30;sun.shadow.camera.near=1;sun.shadow.camera.far=130;sun.shadow.bias=-.0003;scene.add(sun);
+  const fill=new THREE.DirectionalLight(0x9bcaff,.85);fill.position.set(25,18,12);scene.add(fill);
   world=new THREE.Group();scene.add(world);road=new THREE.Group();world.add(road);
-  block(world,180,.5,480,material(0x101925,.04,.98),0,-.58,-105);
+  const earthMat=material(0x547b43,.02,.98);const earth=block(world,240,.65,500,earthMat,0,-.72,-110);earth.receiveShadow=true;
+  const grassMat=material(0x628d4c,.02,.96),soilMat=material(0x806448,.02,1);
+  for(const side of [-1,1]){
+    const verge=block(world,34,.22,470,grassMat,side*26,-.43,-115);verge.receiveShadow=true;
+    for(let i=0;i<9;i++){const hill=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),i%2?grassMat:earthMat);hill.scale.set(rand(12,27),rand(4,10),rand(24,48));hill.position.set(side*rand(28,70),hill.scale.y-1,rand(-285,100));hill.receiveShadow=true;world.add(hill);}
+    for(let i=0;i<26;i++){const z=rand(-320,115),x=side*rand(15,47),tree=new THREE.Group();const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.16,.25,2.2,7),soilMat);trunk.position.y=1.1;tree.add(trunk);const crown=new THREE.Mesh(new THREE.ConeGeometry(rand(1.1,2.0),rand(3.0,5.2),8),material([0x315d35,0x3d713e,0x527d42][i%3],.02,.94));crown.position.y=3.1;tree.add(crown);tree.position.set(x,0,z);tree.scale.setScalar(rand(.8,1.45));tree.traverse(o=>{if(o.isMesh)o.castShadow=true;});world.add(tree);}
+  }
   const asphalt=document.createElement('canvas');asphalt.width=512;asphalt.height=512;const ax=asphalt.getContext('2d');ax.fillStyle='#292e35';ax.fillRect(0,0,512,512);for(let i=0;i<18000;i++){const q=Math.random()*90+70;ax.fillStyle='rgba('+q+','+q+','+q+',0.16)';const x=Math.random()*512,y=Math.random()*512,s=Math.random()*2.2+.3;ax.fillRect(x,y,s,s);}const asphaltMap=new THREE.CanvasTexture(asphalt);asphaltMap.wrapS=asphaltMap.wrapT=THREE.RepeatWrapping;asphaltMap.repeat.set(2,34);asphaltMap.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());const asphaltMat=material(0xffffff,.12,.94,{map:asphaltMap});
   const roadBase=block(road,20,.35,430,asphaltMat,0,-.20,-135);roadBase.receiveShadow=true;
   const shoulder=material(0x66717a,.48,.55),rail=material(0x81909a,.8,.3),dark=material(0x293540,.6,.48);
   block(road,1.1,.22,430,shoulder,-10.3,-.10,-135);block(road,1.1,.22,430,shoulder,10.3,-.10,-135);
   for(const x of [-11.05,11.05]){block(road,.18,.58,430,dark,x,.15,-135);block(road,.22,.13,430,rail,x,.48,-135);}
   const edge=material(0xf0e5c4,.1,.42,{emissive:0x55452c,emissiveIntensity:.22});
-  const neonPink=material(0xff3c9d,.35,.28,{emissive:0xff167e,emissiveIntensity:2.2});const neonBlue=material(0x38dfff,.35,.28,{emissive:0x168bff,emissiveIntensity:2.2});
+  const neonPink=material(0xc9d5dd,.35,.58);const neonBlue=material(0xe5e9e8,.35,.58);
   block(road,.08,.045,430,neonPink,-9.35,.01,-135);block(road,.08,.045,430,neonBlue,9.35,.01,-135);
   block(road,.15,.035,430,edge,-8.8,-.01,-135);block(road,.15,.035,430,edge,8.8,-.01,-135);
   for(let z=-335;z<80;z+=11){addDash(z,-2.95);addDash(z,2.95);}
   for(let z=-220;z<120;z+=35){addLamp(-1,z);addLamp(1,z);}
   for(let z=-235;z<150;z+=34){addBuilding(-1,z+rand(-12,12));addBuilding(1,z+rand(-12,12));}
-  const skyline=material(0x121e2c,.25,.88);
+  const skyline=material(0x7b8f9b,.25,.88);
   for(let i=0;i<36;i++){const h=rand(20,58),x=(Math.random()<.5?-1:1)*rand(37,82),z=rand(-245,-80);block(world,rand(8,18),h,rand(10,20),skyline,x,h/2-1,z);}
   car=makeCar(0x17baba);car.position.set(0,0,5);car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});world.add(car);
   carGlow=new THREE.PointLight(0x35dada,7,15,2);carGlow.position.set(0,1,6);world.add(carGlow);

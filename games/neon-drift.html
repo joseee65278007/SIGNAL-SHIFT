@@ -152,7 +152,7 @@ function spawnTraffic(){
   const colors=[0x9da8b4,0x8e383c,0x355c83,0xb07843,0x526e62,0x404854,0x8b829b,0xe1e0d6];
   const x=lanes[Math.floor(Math.random()*lanes.length)]+rand(-.25,.25),vehicle=makeCar(colors[Math.floor(Math.random()*colors.length)]);
   vehicle.scale.setScalar(rand(.86,1.02));vehicle.position.set(x,0,-rand(125,190));world.add(vehicle);
-  traffic.push({mesh:vehicle,x,z:vehicle.position.z,relative:rand(12,22),passed:false});
+  traffic.push({mesh:vehicle,x,z:vehicle.position.z,relative:rand(8,18),passed:false});
 }
 function particle(x,y,z,color,size,life,vx,vy,vz){
   const m=new THREE.Mesh(new THREE.SphereGeometry(size,8,6),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9}));
@@ -179,22 +179,22 @@ function crash(){
 }
 function update(dt){
   clock+=dt;
-  nitroOn=!!(keys.shift&&nitro>0);speed=120+Math.min(95,clock*1.2)+(nitroOn?65:0);
+  nitroOn=!!(keys.shift&&nitro>0);speed=185+Math.min(110,clock*2.1)+(nitroOn?85:0);
   if(nitroOn)nitro=Math.max(0,nitro-dt*27);else nitro=Math.min(100,nitro+dt*8);
   nitroEl.textContent=Math.round(nitro)+'%';
   const keySteer=(keys.arrowleft||keys.a?-1:0)+(keys.arrowright||keys.d?1:0);
   if(!touchSteer)steer=keySteer;
-  playerX=clamp(playerX+steer*dt*(nitroOn?7.2:6.2),-6.6,6.6);
-  car.position.x=THREE.MathUtils.damp(car.position.x,playerX,.18,dt);
-  car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.11,.14,dt);
-  car.rotation.y=THREE.MathUtils.damp(car.rotation.y,-steer*.055,.12,dt);
-  car.userData.wheels.forEach(w=>w.rotation.x-=dt*speed*.085);
+  playerX=clamp(playerX+steer*dt*(nitroOn?14:11.5),-6.6,6.6);
+  car.position.x=THREE.MathUtils.damp(car.position.x,playerX,12,dt);
+  car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.16,10,dt);
+  car.rotation.y=THREE.MathUtils.damp(car.rotation.y,-steer*.075,9,dt);
+  car.userData.wheels.forEach(w=>w.rotation.x-=dt*speed*.12);
   score+=dt*speed*.16;scoreEl.textContent=String(Math.floor(score)).padStart(5,'0');speedEl.textContent=String(Math.round(speed));
-  const forward=nitroOn?48:35,move=forward*dt;
+  const forward=nitroOn?70:55,move=forward*dt;
   for(const d of dashes){d.position.z+=move;if(d.position.z>70)d.position.z-=418;}
   for(const l of streetlights){l.position.z+=move;if(l.position.z>100)l.position.z-=340;}
   for(const b of buildings){b.position.z+=move*.82;if(b.position.z>115)b.position.z-=370;}
-  spawn-=dt;if(spawn<=0){spawnTraffic();spawn=Math.max(.55,1.55-clock*.006)+rand(0,.45);}
+  spawn-=dt;if(spawn<=0){spawnTraffic();spawn=Math.max(.48,1.25-clock*.005)+rand(0,.32);}
   const px=car.position.x;
   for(const t of traffic){
     t.z+=(forward-t.relative)*dt;t.mesh.position.z=t.z;t.mesh.position.x=t.x+Math.sin(clock*.5+t.x)*.12;

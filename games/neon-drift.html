@@ -23,7 +23,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 @media(max-width:600px){#game{height:100dvh;min-height:0}.top{flex-direction:column;align-items:stretch}.stats{align-self:flex-end;gap:5px}.metric{min-width:54px;padding:6px 5px}.metric small{font-size:7px;letter-spacing:1px}.metric strong{font-size:13px}.brand{font-size:9px}.edition{font-size:8px}.hint{max-width:130px;font-size:8px}.controls{gap:5px}.control{width:38px;height:40px;font-size:15px}#view{width:54px;font-size:9px}}
 </style>
 </head>
-<body><div id="game">
+<body><div id="game" tabindex="-1">
 <canvas id="scene" aria-label="Neon Drift arcade racing game"></canvas>
 <div class="hud"><div class="top"><div><div class="brand">SIGNAL SHIFT <b>/ ORIGINALS</b></div><div class="edition">ARCADE SERIES 001 · NIGHT RUN</div></div><div class="stats"><div class="metric"><small>SCORE</small><strong id="score">00000</strong></div><div class="metric"><small>BEST</small><strong id="best">00000</strong></div><div class="metric"><small>SPEED</small><strong id="speed">120</strong></div><div class="metric"><small>NITRO</small><strong id="nitro">100%</strong></div></div></div>
 <div class="bottom"><div class="hint"><span>← → / A D  STEER&nbsp;&nbsp; · &nbsp;&nbsp;SHIFT NITRO&nbsp;&nbsp; · &nbsp;&nbsp;V VIEW&nbsp;&nbsp; · &nbsp;&nbsp;SPACE PAUSE</span><br>Slip past traffic. Keep the line. Own the night.</div><div class="controls"><button class="control" id="left" aria-label="Steer left">←</button><button class="control" id="view" aria-label="Change camera view">VIEW</button><button class="control" id="pause" aria-label="Pause">Ⅱ</button><button class="control" id="right" aria-label="Steer right">→</button></div></div></div>
@@ -216,6 +216,7 @@ function finish(){
   setTimeout(()=>{if(mode==='over')end.classList.remove('hidden');},360);
 }
 function start(){
+  game.focus({preventScroll:true});
   traffic.forEach(t=>world.remove(t.mesh));traffic=[];
   particles.forEach(p=>world.remove(p.mesh));particles=[];
   clock=0;score=0;speed=120;spawn=.9;playerX=0;steer=0;combo=0;nearMiss=0;nitro=100;shake=0;flash=0;
@@ -237,8 +238,12 @@ function animate(ts){
 }
 $('start').addEventListener('click',start);$('again').addEventListener('click',()=>mode==='paused'?pause():start());
 $('pause').addEventListener('click',pause);$('view').addEventListener('click',cameraChange);
-window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowleft','arrowright',' '].includes(k))e.preventDefault();keys[k]=true;if(k===' '&&mode==='playing')pause();if(k==='v')cameraChange();});
-window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function handleKeyDown(e){const k=e.key.toLowerCase();if(['arrowleft','arrowright',' '].includes(k))e.preventDefault();keys[k]=true;if(k===' '&&mode==='playing')pause();if(k==='v'&&!e.repeat)cameraChange();}
+function handleKeyUp(e){keys[e.key.toLowerCase()]=false;}
+document.addEventListener('keydown',handleKeyDown,{passive:false});
+document.addEventListener('keyup',handleKeyUp);
+window.addEventListener('keydown',handleKeyDown,{passive:false});
+window.addEventListener('keyup',handleKeyUp);
 window.addEventListener('blur',()=>{keys.a=keys.d=keys.arrowleft=keys.arrowright=keys.shift=false;steer=0;touchSteer=false;});
 function hold(id,value){const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();touchSteer=true;steer=value;b.setPointerCapture(e.pointerId);});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>{if(touchSteer&&steer===value){steer=0;touchSteer=false;}}));}
 hold('left',-1);hold('right',1);$('view').textContent=viewNames[view];

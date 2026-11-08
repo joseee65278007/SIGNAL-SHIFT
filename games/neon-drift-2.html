@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080b12">
+<title>NEON DRIFT 2: HEAT PURSUIT — Signal Shift Originals</title>
+<style>
+:root{color-scheme:dark;--cyan:#65f5e7;--red:#ff536d;--gold:#ffc66e;--ink:#080b12}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080b12;color:#f5f7fb;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+body{display:grid;place-items:center;background:radial-gradient(ellipse at 50% 0%,#1c2943,transparent 60%),#080b12}
+#game{position:relative;width:min(100vw,1240px);height:min(100vh,790px);min-height:440px;overflow:hidden;background:#101725;isolation:isolate}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;inset:0;z-index:2;padding:clamp(13px,2.8vw,28px);display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.brand{font-size:10px;font-weight:950;letter-spacing:2.8px;color:#c5d3e7;text-shadow:0 2px 12px #000}.brand b{color:var(--cyan)}.brand small{display:block;margin-top:5px;font-size:9px;color:#8da1bc;letter-spacing:2px}
+.stats{display:flex;gap:8px}.stat{min-width:76px;padding:9px 11px;border:1px solid #ffffff20;border-radius:12px;background:#08111dcc;backdrop-filter:blur(12px);text-align:right;box-shadow:0 8px 30px #0004}.stat small{display:block;color:#91a6c1;font-size:8px;letter-spacing:1.6px}.stat strong{font-size:19px;font-variant-numeric:tabular-nums}
+.bottom{display:flex;align-items:end;justify-content:space-between;gap:12px}.status{width:min(280px,45vw);padding:11px 13px;border:1px solid #ffffff20;border-radius:12px;background:#08111dcc;backdrop-filter:blur(12px)}.statusline{display:flex;justify-content:space-between;font-size:9px;letter-spacing:1.3px;color:#a8bad1;font-weight:900}.bar{height:7px;margin-top:7px;background:#273449;border-radius:9px;overflow:hidden}.fill{height:100%;width:0%;border-radius:9px;transition:width .1s;background:linear-gradient(90deg,#ffc66e,#ff536d);box-shadow:0 0 12px #ff536d88}.hint{font-size:10px;line-height:1.6;color:#a8bad1;text-shadow:0 2px 8px #000}.controls{display:flex;gap:8px;pointer-events:auto}.ctrl{width:48px;height:48px;border:1px solid #ffffff35;border-radius:14px;background:#101d30d9;color:white;font-size:20px;font-weight:900;backdrop-filter:blur(12px);touch-action:none}.ctrl:active{border-color:var(--cyan);background:#17505a}
+.overlay{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:18px;background:linear-gradient(180deg,#060b16b9,#060b16ed);backdrop-filter:blur(9px);transition:opacity .22s}.overlay.hidden{opacity:0;pointer-events:none}.panel{width:min(510px,100%);padding:clamp(23px,4.5vw,40px);border:1px solid #ffffff25;border-radius:24px;background:linear-gradient(145deg,#1b2940f5,#101522f5);box-shadow:0 35px 100px #000b}.eyebrow{font-size:10px;font-weight:950;letter-spacing:3px;color:var(--cyan)}h1{font-size:clamp(40px,8vw,70px);line-height:.86;letter-spacing:-4px;margin:16px 0;font-weight:1000}h1 span{color:var(--red);text-shadow:0 0 30px #ff536d55}.panel p{color:#afbdd0;font-size:13px;line-height:1.7;margin:0 0 20px}.pills{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 22px}.pills span{font-size:9px;font-weight:850;letter-spacing:1px;color:#d7e1ef;padding:8px 10px;border:1px solid #ffffff20;border-radius:8px;background:#ffffff08}.primary{border:0;border-radius:12px;padding:14px 20px;background:linear-gradient(100deg,var(--cyan),#a8f3c9);color:#06141b;font-size:11px;font-weight:1000;letter-spacing:1.2px;cursor:pointer;box-shadow:0 8px 28px #65f5e733}.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}.secondary{margin-left:8px;background:#24334b;color:#e9f4ff;box-shadow:none}.result{display:flex;gap:20px;margin:18px 0}.result div{flex:1}.result small{display:block;color:#91a6c1;font-size:9px;letter-spacing:1.5px}.result strong{font-size:27px;font-variant-numeric:tabular-nums}
+@media(max-width:650px){#game{height:100dvh;min-height:0}.stats{gap:5px}.stat{min-width:59px;padding:8px 7px}.stat strong{font-size:16px}.stat small{font-size:7px}.brand{font-size:8px}.brand small{font-size:7px}.ctrl{width:43px;height:43px}.hint{max-width:135px;font-size:9px}.status{width:42vw;padding:9px}.statusline{font-size:8px}}
+</style>
+</head>
+<body><main id="game">
+<canvas id="scene" aria-label="Neon Drift 2 car chase game"></canvas>
+<div class="hud">
+ <div class="top"><div class="brand">SIGNAL SHIFT <b>/ ORIGINALS</b><small>ARCADE SERIES 002 · HEAT PURSUIT</small></div>
+ <div class="stats"><div class="stat"><small>DISTANCE</small><strong id="distance">0.0 KM</strong></div><div class="stat"><small>TOP SPEED</small><strong id="speed">000</strong></div><div class="stat"><small>BEST</small><strong id="best">0.0</strong></div></div></div>
+ <div class="bottom"><div><div class="status"><div class="statusline"><span>POLICE HEAT</span><span id="heatText">LOW</span></div><div class="bar"><div class="fill" id="heatFill"></div></div><div class="statusline" style="margin-top:9px"><span>NITRO</span><span id="nitroText">100%</span></div><div class="bar"><div id="nitroFill" style="height:100%;width:100%;background:linear-gradient(90deg,#65f5e7,#78a8ff);border-radius:9px"></div></div></div><div class="hint">← → / A D steer · SPACE nitro · P pause<br>Slip past traffic. Lose the patrols. Escape.</div></div>
+ <div class="controls"><button class="ctrl" id="left" aria-label="Steer left">←</button><button class="ctrl" id="nitro" aria-label="Nitro">⚡</button><button class="ctrl" id="right" aria-label="Steer right">→</button></div></div>
+</div>
+<div class="overlay" id="intro"><section class="panel"><div class="eyebrow">SIGNAL SHIFT ORIGINAL · 002</div><h1>HEAT<br><span>PURSUIT.</span></h1><p>The city is locked down. Patrol units are on your tail, traffic is closing in, and the only way out is through. Build distance, dodge roadblocks, and keep your nitro for the moments that matter.</p><div class="pills"><span>POLICE CHASE AI</span><span>ROADBLOCKS</span><span>NITRO BOOST</span><span>ESCAPE MISSION</span></div><button class="primary" id="start">START THE GETAWAY ↗</button></section></div>
+<div class="overlay hidden" id="end"><section class="panel"><div class="eyebrow" id="endEyebrow">CHASE OVER</div><h1 id="endTitle">NICE<br><span>TRY.</span></h1><div class="result"><div><small>DISTANCE</small><strong id="finalDistance">0.0 km</strong></div><div><small>BEST ESCAPE</small><strong id="finalBest">0.0 km</strong></div></div><p id="message">The city is still watching. Try another route.</p><button class="primary" id="again">RUN IT BACK ↗</button></section></div>
+</main>
+<script>
+(function(){
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d'),root=document.getElementById('game');
+const $=id=>document.getElementById(id),intro=$('intro'),end=$('end');
+let W=0,H=0,dpr=1,mode='menu',last=0,time=0,distance=0,best=0,baseSpeed=245,speed=245,player=0,steer=0,nitro=100,heat=0,spawn=0,policeSpawn=0,shake=0,flash=0,roadOffset=0,traffic=[],police=[],blocks=[],particles=[],buildings=[];
+try{best=Number(localStorage.getItem('neonDrift2Best')||0)}catch(e){}$('best').textContent=best.toFixed(1);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a);
+function resize(){const r=root.getBoundingClientRect();W=r.width;H=r.height;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);buildings=Array.from({length:18},(_,i)=>({side:i%2?1:-1,x:rand(.02,.19),h:rand(45,160),w:rand(25,70),seed:rand(0,100)}))}
+window.addEventListener('resize',resize);resize();
+function road(y){const t=y/H,curve=Math.sin(time*.22+t*1.8)*W*.10+Math.sin(time*.11+t*3.3)*W*.035;return {c:W*.5+curve,w:W*(.25+.42*t)}}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function polygon(points,fill){ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill()}
+function car(x,y,scale,color,kind){ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.shadowColor=color;ctx.shadowBlur=kind==='player'?25:14;
+ctx.fillStyle='#050912';rr(-18,-32,36,67,10);ctx.fill();
+const paint=ctx.createLinearGradient(-18,-25,18,30);paint.addColorStop(0,color);paint.addColorStop(.5,kind==='police'?'#dce6f4':color);paint.addColorStop(1,'#101a2a');ctx.fillStyle=paint;rr(-15,-29,30,60,9);ctx.fill();
+ctx.fillStyle=kind==='police'?'#182b46':'#101b2b';rr(-11,-17,22,22,5);ctx.fill();ctx.fillStyle='#829db7';rr(-9,-14,18,11,3);ctx.fill();
+ctx.fillStyle='#eafcff';ctx.fillRect(-12,23,8,4);ctx.fillRect(4,23,8,4);ctx.fillStyle='#0b101a';ctx.fillRect(-20,-17,5,15);ctx.fillRect(15,-17,5,15);
+if(kind==='police'){ctx.fillStyle='#ff5268';ctx.fillRect(-10,-25,9,4);ctx.fillStyle='#59e9ff';ctx.fillRect(1,-25,9,4);ctx.globalAlpha=.7;ctx.fillStyle='#ff5268';ctx.fillRect(-17,-38,8,3);ctx.fillStyle='#59e9ff';ctx.fillRect(9,-38,8,3)}
+if(kind==='player'){ctx.fillStyle='#eaffff';ctx.fillRect(-2,-24,4,4);ctx.fillStyle='#65f5e7';ctx.fillRect(-13,5,26,2)}
+ctx.restore()}
+function background(dt){
+const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#0b1221');sky.addColorStop(.55,'#17253a');sky.addColorStop(1,'#0a111d');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+const horizon=H*.29;
+for(const b of buildings){const depth=(b.seed/100+time*.035)%1,y=horizon+depth*H*.7,scale=.35+depth*.9,x=b.side<0?b.x*W:W-b.x*W-b.w*scale,w=b.w*scale,h=b.h*scale;ctx.fillStyle=depth>.55?'#202c40':'#131e31';ctx.fillRect(x,y-h,w,h);ctx.fillStyle=b.side<0?'#ffb86c':'#63dfe4';ctx.globalAlpha=.13+depth*.12;for(let wy=y-h+8;wy<y-5;wy+=12)for(let wx=x+5;wx<x+w-3;wx+=10)ctx.fillRect(wx,wy,3,5);ctx.globalAlpha=1}
+const a=road(horizon),b=road(H+20);polygon([[a.c-a.w/2,horizon],[a.c+a.w/2,horizon],[b.c+b.w/2,H],[b.c-b.w/2,H]],'#273449');
+polygon([[a.c-a.w/2-7,horizon],[a.c-a.w/2+4,horizon],[b.c-b.w/2+7,H],[b.c-b.w/2-8,H]],'#65e9df');polygon([[a.c+a.w/2-4,horizon],[a.c+a.w/2+7,horizon],[b.c+b.w/2+8,H],[b.c+b.w/2-7,H]],'#65e9df');
+for(let lane=1;lane<=2;lane++)for(let i=0;i<12;i++){let y=horizon+((i*82+roadOffset)%(H-horizon+90))-35,t=(y-horizon)/(H-horizon),r=road(y),x=r.c+(lane-1.5)*r.w/3,ww=1+t*2,hh=8+t*29;ctx.fillStyle='#d9e5f4';ctx.globalAlpha=.18+t*.32;ctx.fillRect(x-ww/2,y,ww,hh);ctx.globalAlpha=1}
+ctx.fillStyle='#ffbd68';ctx.globalAlpha=.14;ctx.fillRect(0,horizon-2,W,2);ctx.globalAlpha=1;
+}
+function burst(x,y,color,n){for(let i=0;i<n;i++){const a=rand(0,Math.PI*2),v=rand(50,320);particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(.25,.8),max:.8,size:rand(1.5,4),color})}}
+function spawnTraffic(){const y=H*.3-80,r=road(y),lane=Math.floor(rand(0,4));traffic.push({lane,y,x:r.c+(lane-1.5)*r.w/4,color:['#f6b86b','#8b9cff','#e7e9ee','#6dd5bd'][Math.floor(rand(0,4))],v:rand(25,95),passed:false})}
+function spawnPolice(){police.push({x:W*.5+rand(-W*.16,W*.16),y:H+80,phase:rand(0,6),v:rand(45,95),siren:rand(0,1)})}
+function spawnBlock(){const y=H*.34-40,r=road(y),lane=Math.floor(rand(0,4));blocks.push({x:r.c+(lane-1.5)*r.w/4,y,lane})}
+function update(dt){
+time+=dt;const boosting=(keys.space||keys.nitro)&&nitro>0;speed=baseSpeed+(boosting?190:0)+heat*1.3; if(boosting){nitro=Math.max(0,nitro-30*dt);heat=Math.max(0,heat-3*dt)}else nitro=Math.min(100,nitro+8*dt);
+distance+=speed*dt/1000;roadOffset=(roadOffset+speed*dt*.8)%130;
+const r=road(H*.82),limit=r.w*.38;player=clamp(player+steer*dt*W*.85,-limit,limit);
+spawn-=dt;if(spawn<=0){spawnTraffic();spawn=Math.max(.34,rand(.72,1.18)-heat*.012)}
+policeSpawn-=dt;if(policeSpawn<=0&&heat>5){spawnPolice();policeSpawn=rand(2.4,4.2)-heat*.025}
+if(distance>1.5&&Math.floor(distance)%3===0&&blocks.length<2&&Math.random()<dt*.15)spawnBlock();
+traffic.forEach(t=>{const tr=road(t.y);t.y+=(speed-t.v)*dt;t.x=tr.c+(t.lane-1.5)*tr.w/4;if(!t.passed&&t.y>H*.82+35){t.passed=true;heat=Math.min(100,heat+2);nitro=Math.min(100,nitro+4)}if(t.y>H*.82-43&&t.y<H*.82+48&&Math.abs(t.x-(r.c+player))<34)crash('Traffic collision')});
+police.forEach(p=>{p.y-=dt*(70+heat*1.1);p.x+=Math.sin(time*1.8+p.phase)*dt*65+(r.c+player-p.x)*dt*.045;if(p.y>H*.82-50&&p.y<H*.82+45&&Math.abs(p.x-(r.c+player))<38)crash('The patrol caught you')});
+blocks.forEach(b=>{b.y+=speed*dt*.78;const br=road(b.y);b.x=br.c+(b.lane-1.5)*br.w/4;if(b.y>H*.82-45&&b.y<H*.82+48&&Math.abs(b.x-(r.c+player))<36)crash('Roadblock hit')});
+traffic=traffic.filter(x=>x.y<H+90);police=police.filter(x=>x.y>-120);blocks=blocks.filter(x=>x.y<H+90);
+particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.life-=dt});particles=particles.filter(p=>p.life>0);
+heat=Math.min(100,heat+dt*(distance>0.4?1.1:.25));shake=Math.max(0,shake-dt*28);flash=Math.max(0,flash-dt);
+$('distance').textContent=distance.toFixed(1)+' KM';$('speed').textContent=String(Math.round(speed*.55)).padStart(3,'0');$('heatFill').style.width=heat+'%';$('heatText').textContent=heat<25?'LOW':heat<55?'SEARCHING':heat<80?'LOCKED ON':'MAXIMUM';$('nitroFill').style.width=nitro+'%';$('nitroText').textContent=Math.round(nitro)+'%';
+if(distance>=5){finish(true)}
+}
+function draw(){
+ctx.save();if(shake)ctx.translate(rand(-shake,shake),rand(-shake,shake));background(0);
+blocks.forEach(b=>{ctx.save();ctx.translate(b.x,b.y);ctx.shadowColor='#ff536d';ctx.shadowBlur=18;ctx.fillStyle='#ff536d';rr(-25,-7,50,14,4);ctx.fill();ctx.fillStyle='#ffe8a6';for(let i=-2;i<=2;i++)ctx.fillRect(i*9-2,-5,4,10);ctx.restore()});
+traffic.forEach(t=>{const scale=.45+.55*(t.y/H);car(t.x,t.y,scale,t.color,'traffic')});
+police.forEach(p=>{const scale=.7+.3*(p.y/H);car(p.x,p.y,scale,'#dce7f3','police');if(Math.sin(time*18+p.siren)>0){ctx.fillStyle='#ff536d';ctx.globalAlpha=.22;ctx.beginPath();ctx.arc(p.x,p.y-10,28,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}});
+const pr=road(H*.82);car(pr.c+player,H*.82,1.15,'#65f5e7','player');
+particles.forEach(p=>{ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=10;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill()});ctx.globalAlpha=1;ctx.restore();
+if(flash){ctx.fillStyle='rgba(255,65,95,'+flash*.35+')';ctx.fillRect(0,0,W,H)}
+}
+function loop(ts){if(mode!=='playing')return;const dt=Math.min((ts-last)/1000||0,.035);last=ts;update(dt);draw();if(mode==='playing')requestAnimationFrame(loop)}
+function start(){time=0;distance=0;speed=baseSpeed;player=0;steer=0;nitro=100;heat=0;spawn=.5;policeSpawn=2;traffic=[];police=[];blocks=[];particles=[];shake=0;mode='playing';intro.classList.add('hidden');end.classList.add('hidden');last=performance.now();requestAnimationFrame(loop)}
+function crash(reason){if(mode!=='playing')return;burst(road(H*.82).c+player,H*.82,'#ff536d',45);shake=16;flash=1;finish(false,reason)}
+function finish(escaped,reason){if(mode!=='playing')return;mode='over';if(distance>best){best=distance;try{localStorage.setItem('neonDrift2Best',String(best))}catch(e){}}$('best').textContent=best.toFixed(1);$('finalDistance').textContent=distance.toFixed(1)+' km';$('finalBest').textContent=best.toFixed(1)+' km';$('endEyebrow').textContent=escaped?'CITY ESCAPE COMPLETE':'CHASE OVER';$('endTitle').innerHTML=escaped?'YOU<br><span>GOT OUT.</span>':'CHASE<br><span>ENDED.</span>';$('message').textContent=escaped?'You outran the entire patrol network. The city lights are yours.':(reason||'The patrol closed the gap. Learn the traffic pattern and try again.');setTimeout(()=>{end.classList.remove('hidden');draw()},350)}
+function pause(){if(mode==='playing'){mode='paused';$('endEyebrow').textContent='PAUSED';$('endTitle').innerHTML='CATCH<br><span>YOUR BREATH.</span>';$('finalDistance').textContent=distance.toFixed(1)+' km';$('finalBest').textContent=best.toFixed(1)+' km';$('message').textContent='The patrol is still out there. Ready when you are.';$('again').textContent='RESUME CHASE ↗';end.classList.remove('hidden')}else if(mode==='paused'){end.classList.add('hidden');mode='playing';$('again').textContent='RUN IT BACK ↗';last=performance.now();requestAnimationFrame(loop)}}
+const keys={};window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowleft','arrowright',' ','p'].includes(k))e.preventDefault();keys[k]=true;if(k==='p')pause()});window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function controls(){steer=(keys.arrowleft||keys.a?-1:0)+(keys.arrowright||keys.d?1:0)}setInterval(controls,20);
+function hold(id,value){const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[value<0?'arrowleft':'arrowright']=true;b.setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>keys[value<0?'arrowleft':'arrowright']=false))}
+hold('left',-1);hold('right',1);$('nitro').addEventListener('pointerdown',()=>keys.nitro=true);['pointerup','pointercancel','pointerleave'].forEach(ev=>$('nitro').addEventListener(ev,()=>keys.nitro=false));
+$('start').addEventListener('click',start);$('again').addEventListener('click',()=>{if(mode==='paused')pause();else start()});draw();
+})();
+</script></body></html>

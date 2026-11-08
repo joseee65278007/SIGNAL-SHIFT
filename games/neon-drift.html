@@ -185,11 +185,11 @@ function update(dt){
   const keySteer=(keys.arrowleft||keys.a?-1:0)+(keys.arrowright||keys.d?1:0);
   if(!touchSteer)steer=keySteer;
   // More controlled lane changes: slower lateral movement and almost no body roll.
-  const steerRate=nitroOn?16:13+Math.min(2,upgrades.handling*.5);
-  playerX=clamp(playerX+steer*dt*steerRate,-6.6,6.6);
-  car.position.x=THREE.MathUtils.damp(car.position.x,playerX,18,dt);
-  car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.045,9,dt);
-  car.rotation.y=THREE.MathUtils.damp(car.rotation.y,-steer*.035,8,dt);
+  const steerRate=nitroOn?25:22+Math.min(3,upgrades.handling*.75);
+  playerX=clamp(playerX+steer*dt*steerRate,-6.8,6.8);
+  car.position.x=THREE.MathUtils.damp(car.position.x,playerX,16,dt);
+  car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.12,10,dt);
+  car.rotation.y=THREE.MathUtils.damp(car.rotation.y,-steer*.06,9,dt);
   car.userData.wheels.forEach(w=>w.rotation.x-=dt*speed*.12);
   score+=dt*speed*.16;while(score>=nextCoinAt){reward(2);nextCoinAt+=100;}
   if(gameMode==='story'&&score>=level*600){reward(75+level*15);level++;saveGarage();mode='over';finish(true);return;}

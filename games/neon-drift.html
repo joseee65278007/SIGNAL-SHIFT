@@ -66,44 +66,28 @@ function makeWheel(parent,x,z){
   return wheel;
 }
 function makeCar(color,addLights=true){
-  const g=new THREE.Group(),paint=material(color,.78,.2),glass=material(0x071521,.82,.1),trim=material(0x10151c,.72,.3),chrome=material(0xb9c8cf,.92,.16);
-  const red=material(0xff173e,.2,.18,{emissive:0xff1037,emissiveIntensity:2.4});
-  const white=material(0xfff1d2,.2,.16,{emissive:0xffdf9b,emissiveIntensity:2.8});
-  const smooth=(w,h,d,mat,x,y,z,seg=32)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(1,seg,24),mat);o.scale.set(w/2,h/2,d/2);o.position.set(x,y,z);o.castShadow=false;g.add(o);return o;};
-  // Sculpted, continuous fastback body: smooth ellipsoids replace the old box-built silhouette.
-  smooth(2.12,.54,4.85,paint,0,.68,0,48);
-  smooth(1.96,.34,2.05,paint,0,.83,-1.28,48); // long sloping hood
-  smooth(1.92,.32,1.42,paint,0,.78,1.48,48); // rear deck
-  smooth(1.63,.78,2.42,glass,0,1.13,-.18,48); // panoramic cabin
-  smooth(1.48,.16,1.45,paint,0,1.48,-.28,40); // roof crown
-  smooth(1.60,.13,.62,glass,0,1.23,-1.12,40); // windshield
-  smooth(1.55,.12,.57,glass,0,1.22,.78,40); // rear glass
-  // Lower rocker panels, sculpted wheel arches and front/rear splitters.
-  for(const x of [-.93,.93]){
-    smooth(.24,.25,3.25,trim,x,.48,0);
-    for(const z of [-1.48,1.48]){
-      const arch=new THREE.Mesh(new THREE.TorusGeometry(.55,.085,12,40,Math.PI),trim);
-      arch.rotation.set(Math.PI/2,0,z<0?Math.PI:0);arch.position.set(x,.50,z);g.add(arch);
-    }
-  }
-  smooth(1.98,.12,.24,trim,0,.48,-2.36);
-  smooth(1.95,.14,.24,trim,0,.48,2.35);
-  // Front grille, intake details, LED strips and rear light bar.
-  smooth(.82,.22,.10,trim,0,.61,-2.39);
-  for(const x of [-.69,.69]){
-    smooth(.48,.12,.09,white,x,.82,-2.34);
-    smooth(.44,.085,.08,red,x,.83,2.34);
-    const mirror=smooth(.24,.14,.34,paint,x*1.12,1.12,-.52,24);
-    mirror.rotation.y=x<0?-.2:.2;
-    const exhaust=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.14,20),chrome);exhaust.rotation.x=Math.PI/2;exhaust.position.set(x*.72,.49,2.42);g.add(exhaust);
-  }
-  // Subtle bonnet creases and aerodynamic rear spoiler.
-  for(const x of [-.56,.56]){const crease=smooth(.035,.018,1.32,chrome,x,.99,-1.35,16);crease.rotation.z=x<0?-.025:.025;}
-  smooth(1.76,.075,.18,trim,0,1.38,1.91);
-  for(const x of [-.69,.69])smooth(.10,.24,.13,trim,x,1.26,1.88,20);
-  const wheels=[];for(const x of [-1.02,1.02])for(const z of [-1.53,1.53])wheels.push(makeWheel(g,x,z));
-  if(addLights)for(const x of [-.65,.65]){const hl=new THREE.SpotLight(0xffedcf,7,38,.34,.68,1.4);hl.position.set(x,.78,-2.15);hl.target.position.set(x,.1,-26);g.add(hl);g.add(hl.target);}
-  g.userData.wheels=wheels;return g;
+ const g=new THREE.Group(),paint=material(color,.48,.24),dark=material(0x101923,.58,.28),glass=material(0x071522,.22,.12),rubber=material(0x090d12,.82,.18),metal=material(0xaebbc5,.82,.2);
+ const led=material(0xe8fbff,.12,.12,{emissive:0xbdeeff,emissiveIntensity:2.6}),tail=material(0xff173e,.18,.16,{emissive:0xff102e,emissiveIntensity:2.4});
+ function loft(stations,mat){const v=[],idx=[],n=8;for(const s of stations){const[z,w,b,sh,t]=s,pts=[[-w*.88,b],[-w,b+.13],[-w*.96,sh],[-w*.67,t-.10],[-w*.42,t],[w*.42,t],[w*.67,t-.10],[w*.96,sh]];for(const p of pts)v.push(p[0],p[1],z);}for(let j=0;j<stations.length-1;j++)for(let k=0;k<n;k++){const a=j*n+k,b=j*n+(k+1)%n,c=(j+1)*n+(k+1)%n,d=(j+1)*n+k;idx.push(a,b,d,b,c,d);}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(v,3));geo.setIndex(idx);geo.computeVertexNormals();const m=new THREE.Mesh(geo,mat);m.material.side=THREE.DoubleSide;m.castShadow=true;g.add(m);return m;}
+ loft([[-2.48,.72,.48,.64,.72],[-2.30,.94,.43,.72,.83],[-1.90,1.04,.40,.78,.91],[-1.35,1.08,.39,.80,.94],[-.65,1.10,.39,.82,.98],[.35,1.10,.39,.82,.98],[1.25,1.08,.40,.80,.94],[1.90,1.00,.43,.76,.88],[2.28,.88,.46,.70,.80],[2.43,.66,.48,.62,.70]],paint);
+ const floor=new THREE.Mesh(new THREE.BoxGeometry(1.72,.18,4.38),dark);floor.position.set(0,.43,0);g.add(floor);
+ for(const x of [-.91,.91]){const s=new THREE.Mesh(new THREE.BoxGeometry(.12,.20,3.45),dark);s.position.set(x,.48,0);g.add(s);}
+ loft([[-1.40,.69,.83,1.00,1.08],[-1.02,.76,.82,1.25,1.40],[-.55,.72,.82,1.34,1.48],[.42,.70,.82,1.33,1.46],[.92,.67,.80,1.18,1.28],[1.30,.59,.76,.99,1.06]],glass);
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(1.02,.075,1.05),paint);roof.position.set(0,1.45,-.04);g.add(roof);
+ const pane=(w,h,x,y,z,rx)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,.025),glass);m.position.set(x,y,z);m.rotation.x=rx;g.add(m);};
+ pane(1.25,.48,0,1.18,-1.02,-.48);pane(1.12,.36,0,1.12,1.04,.52);
+ for(const side of [-1,1]){const sill=new THREE.Mesh(new THREE.BoxGeometry(.035,.045,1.72),metal);sill.position.set(side*.72,1,-.03);g.add(sill);const pillar=new THREE.Mesh(new THREE.BoxGeometry(.045,.39,.07),dark);pillar.position.set(side*.70,1.23,.36);g.add(pillar);const mirror=new THREE.Mesh(new THREE.SphereGeometry(.13,16,12),paint);mirror.scale.set(1,.55,1.3);mirror.position.set(side*.91,1.06,-.76);g.add(mirror);}
+ const splitter=new THREE.Mesh(new THREE.BoxGeometry(1.92,.075,.28),dark);splitter.position.set(0,.48,-2.39);g.add(splitter);
+ const grille=new THREE.Mesh(new THREE.BoxGeometry(.72,.19,.055),rubber);grille.position.set(0,.61,-2.40);g.add(grille);
+ for(const x of [-.70,.70]){const l=new THREE.Mesh(new THREE.BoxGeometry(.42,.09,.055),led);l.position.set(x,.77,-2.31);g.add(l);const intake=new THREE.Mesh(new THREE.BoxGeometry(.28,.22,.06),rubber);intake.position.set(x,.57,-2.34);g.add(intake);const r=new THREE.Mesh(new THREE.BoxGeometry(.55,.09,.055),tail);r.position.set(x*.75,.72,2.35);g.add(r);}
+ for(const x of [-.43,.43]){const line=new THREE.Mesh(new THREE.BoxGeometry(.025,.018,1.12),metal);line.position.set(x,.91,-1.73);g.add(line);}
+ const diffuser=new THREE.Mesh(new THREE.BoxGeometry(1.48,.13,.22),dark);diffuser.position.set(0,.48,2.34);g.add(diffuser);
+ const wing=new THREE.Mesh(new THREE.BoxGeometry(1.48,.065,.24),dark);wing.position.set(0,1.02,2.10);g.add(wing);
+ for(const x of [-.55,.55]){const p=new THREE.Mesh(new THREE.BoxGeometry(.055,.23,.07),metal);p.position.set(x,.91,2.08);g.add(p);}
+ const wheels=[];for(const x of [-1.02,1.02])for(const z of [-1.52,1.52])wheels.push(makeWheel(g,x,z));
+ for(const x of [-1.02,1.02])for(const z of [-1.52,1.52]){const a=new THREE.Mesh(new THREE.TorusGeometry(.52,.045,8,32,Math.PI),dark);a.rotation.set(Math.PI/2,0,z<0?Math.PI:0);a.position.set(x,.50,z);g.add(a);}
+ if(addLights)for(const x of [-.63,.63]){const h=new THREE.SpotLight(0xeaf7ff,5,34,.30,.72,1.3);h.position.set(x,.76,-2.20);h.target.position.set(x,.08,-25);g.add(h);g.add(h.target);}
+ g.userData.wheels=wheels;return g;
 }
 function addBuilding(side,z){
   const g=new THREE.Group(),w=rand(7,13),h=rand(13,36),d=rand(9,18);

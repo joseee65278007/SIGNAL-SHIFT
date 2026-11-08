@@ -52,7 +52,7 @@ const cars=[{id:'starter',name:'K-Series Sport',price:0,color:0x17baba,desc:'Kia
 let ownedCars=['starter'],selectedCar='starter',starterColor=0x17baba;
 const paintColors=[{name:'Electric Blue',value:0x17baba},{name:'Pearl White',value:0xe8edf4},{name:'Racing Red',value:0xe52d45},{name:'Graphite',value:0x454e5b},{name:'Sunset Orange',value:0xff792e},{name:'Neon Purple',value:0x8849df},{name:'Lime',value:0x9cce35}];
 try{const p=JSON.parse(localStorage.getItem('neonDriftGarage')||'{}');bankCoins=Number(p.coins)||0;ownedCars=Array.isArray(p.owned)?p.owned:['starter'];if(!ownedCars.includes('starter'))ownedCars.unshift('starter');selectedCar=p.selected||'starter';if(!ownedCars.includes(selectedCar))selectedCar='starter';starterColor=Number(p.starterColor)||starterColor;upgrades=Object.assign(upgrades,p.upgrades||{});level=Math.max(1,Number(p.level)||1);}catch(e){}
-function saveGarage(){try{localStorage.setItem('neonDriftGarage',JSON.stringify({coins:bankCoins,owned:ownedCars,selected:selectedCar,starterColor,upgrades,level}));}catch(e){}$('coins').textContent=bankCoins.toLocaleString();$('garageBalance').textContent=bankCoins.toLocaleString()+' COINS';}
+function saveGarage(){try{localStorage.setItem('neonDriftGarage',JSON.stringify({coins:bankCoins,owned:ownedCars,selected:selectedCar,starterColor,upgrades,level}));}catch(e){}$('coins').textContent=bankCoins.toLocaleString();$('garageBalance').textContent=bankCoins.toLocaleString()+' COINS';if($('menuCoins'))$('menuCoins').textContent=bankCoins.toLocaleString();const current=cars.find(v=>v.id===selectedCar)||cars[0];if($('menuCarName'))$('menuCarName').innerHTML=current.name.toUpperCase().replace(' ','<br>');if($('menuCarDesc'))$('menuCarDesc').textContent=current.desc;if($('menuCollection'))$('menuCollection').textContent=ownedCars.length+' / '+cars.length;if($('menuTopSpeed'))$('menuTopSpeed').textContent=185+upgrades.engine*12;}
 function reward(n){bankCoins+=n;runCoins+=n;saveGarage();}
 saveGarage();
 
@@ -275,7 +275,8 @@ function renderGarage(){
  $('carShop').querySelectorAll('[data-car]').forEach(b=>b.addEventListener('click',()=>{const v=cars.find(x=>x.id===b.dataset.car);if(ownedCars.includes(v.id))selectedCar=v.id;else if(bankCoins>=v.price){bankCoins-=v.price;ownedCars.push(v.id);selectedCar=v.id;}else{$('garageNote').textContent='Not enough coins yet. Keep racing to earn more.';return;}saveGarage();renderGarage();}));
  $('upgradeShop').querySelectorAll('[data-upgrade]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.upgrade,price={engine:250,handling:200,nitro:300,armor:400}[id];if(bankCoins<price){$('garageNote').textContent='Not enough coins for that upgrade yet.';return;}bankCoins-=price;upgrades[id]=(upgrades[id]||0)+1;saveGarage();renderGarage();}));
 }
-$('shopOpen').addEventListener('click',()=>{$('garage').classList.remove('hidden');renderGarage();});
+function openGarage(tab){$('garage').classList.remove('hidden');renderGarage();if(tab==='paint')setTimeout(()=>$('paintBar').scrollIntoView({block:'center',behavior:'smooth'}),50);}
+$('shopOpen').addEventListener('click',()=>openGarage());$('menuGarage').addEventListener('click',()=>openGarage());$('menuPaint').addEventListener('click',()=>openGarage('paint'));$('menuShop').addEventListener('click',()=>openGarage());$('menuShop2').addEventListener('click',()=>openGarage());
 $('garageClose').addEventListener('click',()=>$('garage').classList.add('hidden'));
 $('modeOpen').addEventListener('click',()=>{mode='menu';end.classList.add('hidden');intro.classList.remove('hidden');});
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{gameMode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));}));

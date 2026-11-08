@@ -242,8 +242,6 @@ function handleKeyDown(e){const k=e.key.toLowerCase();if(['arrowleft','arrowrigh
 function handleKeyUp(e){keys[e.key.toLowerCase()]=false;}
 document.addEventListener('keydown',handleKeyDown,{passive:false});
 document.addEventListener('keyup',handleKeyUp);
-window.addEventListener('keydown',handleKeyDown,{passive:false});
-window.addEventListener('keyup',handleKeyUp);
 window.addEventListener('blur',()=>{keys.a=keys.d=keys.arrowleft=keys.arrowright=keys.shift=false;steer=0;touchSteer=false;});
 function hold(id,value){const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();touchSteer=true;steer=value;b.setPointerCapture(e.pointerId);});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>{if(touchSteer&&steer===value){steer=0;touchSteer=false;}}));}
 hold('left',-1);hold('right',1);$('view').textContent=viewNames[view];

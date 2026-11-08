@@ -184,10 +184,10 @@ function update(dt){
   nitroEl.textContent=Math.round(nitro)+'%';
   const keySteer=(keys.arrowleft||keys.a?-1:0)+(keys.arrowright||keys.d?1:0);
   if(!touchSteer)steer=keySteer;
-  playerX=clamp(playerX+steer*dt*(nitroOn?14:11.5),-6.6,6.6);
-  car.position.x=THREE.MathUtils.damp(car.position.x,playerX,12,dt);
-  car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.16,10,dt);
-  car.rotation.y=THREE.MathUtils.damp(car.rotation.y,-steer*.075,9,dt);
+  playerX=clamp(playerX+steer*dt*(nitroOn?34:29),-7.2,7.2);
+  car.position.x=THREE.MathUtils.damp(car.position.x,playerX,22,dt);
+  car.rotation.z=THREE.MathUtils.damp(car.rotation.z,-steer*.25,15,dt);
+  car.rotation.y=THREE.MathUtils.damp(car.rotation.y,-steer*.12,13,dt);
   car.userData.wheels.forEach(w=>w.rotation.x-=dt*speed*.12);
   score+=dt*speed*.16;scoreEl.textContent=String(Math.floor(score)).padStart(5,'0');speedEl.textContent=String(Math.round(speed));
   const forward=nitroOn?70:55,move=forward*dt;
